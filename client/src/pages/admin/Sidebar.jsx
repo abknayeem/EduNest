@@ -1,30 +1,65 @@
-import { ChartNoAxesColumn, SquareLibrary, Users } from "lucide-react";
+import {
+  ChartNoAxesColumn,
+  SquareLibrary,
+  Users,
+  ArrowLeftCircle,
+  Landmark,
+} from "lucide-react";
 import React from "react";
-import { Link, Outlet } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Separator } from "@/components/ui/separator";
+
+const getNavLinkClass = ({ isActive }) =>
+  `flex items-center gap-4 p-3 rounded-lg text-sm transition-colors ${
+    isActive
+      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 font-semibold"
+      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+  }`;
 
 const Sidebar = () => {
+  const { user } = useSelector((store) => store.auth);
+
   return (
     <div className="flex">
-      <div className="hidden lg:block w-[250px] sm:w-[300px] space-y-8 border-r border-gray-300 dark:border-gray-700 p-5 sticky top-0 h-screen">
-        <div className="space-y-4">
-          <Link to="analytics" className="flex items-center gap-2">
-            <ChartNoAxesColumn size={22} />
-            <h1>Dashboard</h1>
-          </Link>
-          <Link to="course" className="flex items-center gap-2">
-            <SquareLibrary size={22} />
-            <h1>Courses</h1>
-          </Link>
+      <div className="hidden lg:block w-[250px] sm:w-[300px] space-y-2 border-r border-gray-300 dark:border-gray-700 p-4 sticky top-16 h-[calc(100vh-4rem)]">
+        <nav className="space-y-2">
+          {user?.role === "superadmin" && (
+            <>
+              <NavLink
+                to="/sadmin/dashboard"
+                className="flex items-center gap-4 p-3 rounded-lg text-sm text-purple-600 dark:text-purple-400 font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
+              >
+                <ArrowLeftCircle size={20} />
+                <span>Back to Superadmin</span>
+              </NavLink>
+              <Separator className="my-3" />
+            </>
+          )}
 
-          <Link to="enrolled-students" className="flex items-center gap-2">
-            <Users size={22} />
-            <h1>Enrolled Students</h1>
-          </Link>
-        </div>
+          <NavLink to="analytics" className={getNavLinkClass}>
+            <ChartNoAxesColumn size={20} />
+            <span>Dashboard</span>
+          </NavLink>
+
+          <NavLink to="financials" className={getNavLinkClass}>
+            <Landmark size={20} />
+            <span>Financials</span>
+          </NavLink>
+
+          <NavLink to="course" className={getNavLinkClass}>
+            <SquareLibrary size={20} />
+            <span>Courses</span>
+          </NavLink>
+          <NavLink to="enrolled-students" className={getNavLinkClass}>
+            <Users size={20} />
+            <span>Enrolled Students</span>
+          </NavLink>
+        </nav>
       </div>
-      <div className="flex-1 p-10 dark:bg-[#141414]">
+      <main className="flex-1 p-10 dark:bg-[#141414]">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 };

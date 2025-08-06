@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowLeft } from "lucide-react";
+import StudentCourseProgress from "@/components/StudentCourseProgress";
 
 const DetailRow = ({ label, value }) => (
   <div>
@@ -153,9 +154,26 @@ const UserDetails = () => {
           <CardHeader>
             <CardTitle>Educational Details</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
-            <DetailRow label="Background" value={user.education} />
-            <DetailRow label="Institute" value={user.institute} />
+          <CardContent className="space-y-3">
+            {user.educationHistory && user.educationHistory.length > 0 ? (
+              user.educationHistory.map((edu, index) => (
+                <div
+                  key={index}
+                  className="text-sm border-b pb-2 last:border-b-0"
+                >
+                  <p className="font-semibold">{edu.degree}</p>
+                  <p className="text-muted-foreground">{edu.institute}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {edu.major && `Major: ${edu.major} | `}
+                    Year: {edu.passingYear}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No educational details provided.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -181,7 +199,7 @@ const UserDetails = () => {
               <TableRow>
                 <TableHead>Course Title</TableHead>
                 <TableHead>Instructor</TableHead>
-                <TableHead>Category</TableHead>
+                <TableHead className="text-center">Progress</TableHead>
                 <TableHead className="text-right">Price</TableHead>
               </TableRow>
             </TableHeader>
@@ -193,7 +211,12 @@ const UserDetails = () => {
                       {course.courseTitle}
                     </TableCell>
                     <TableCell>{course.creator?.name || "N/A"}</TableCell>
-                    <TableCell>{course.category}</TableCell>
+                    <TableCell className="text-center">
+                      <StudentCourseProgress
+                        userId={user._id}
+                        courseId={course._id}
+                      />
+                    </TableCell>
                     <TableCell className="text-right">
                       ৳{course.coursePrice?.toLocaleString() || "Free"}
                     </TableCell>

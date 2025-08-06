@@ -1,13 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useGetEnrolledStudentsQuery } from "@/features/api/instructorApi";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -16,7 +9,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import StudentCourseProgress from '@/components/StudentCourseProgress';
+import { Search } from "lucide-react";
 
 const EnrolledStudents = () => {
   const { data, isLoading, isError, error } = useGetEnrolledStudentsQuery();
@@ -85,111 +79,118 @@ const EnrolledStudents = () => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Enrolled Students</CardTitle>
-        <CardDescription>
-          A list of all students enrolled in your courses.
-        </CardDescription>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+              <h1 className="text-2xl font-bold">Enrolled Students</h1>
+              <p className="mt-1 text-muted-foreground">
+                A list of all students enrolled in your courses.
+              </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by student or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 w-full"
+              />
+            </div>
+            <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+              <SelectTrigger className="w-full md:w-[220px]">
+                <SelectValue placeholder="Filter by course" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Courses</SelectItem>
+                {uniqueCourses.map((course) => (
+                  <SelectItem key={course._id} value={course._id}>
+                    {course.courseTitle}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+      </div>
 
-        <div className="flex flex-col md:flex-row gap-4 mt-4">
-          <Input
-            placeholder="Search by student name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-          />
-          <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-            <SelectTrigger className="w-full md:w-[250px]">
-              <SelectValue placeholder="Filter by course" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Courses</SelectItem>
-              {uniqueCourses.map((course) => (
-                <SelectItem key={course._id} value={course._id}>
-                  {course.courseTitle}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Student</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Enrolled Course</TableHead>
-              <TableHead className="text-right">Enrollment Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentItems.length > 0 ? (
-              currentItems.map((enrollment) => (
-                <TableRow key={enrollment._id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage
-                          src={enrollment.userId.photoUrl}
-                          alt={enrollment.userId.name}
-                        />
-                        <AvatarFallback>
-                          {enrollment.userId.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      {enrollment.userId.name}
-                    </div>
-                  </TableCell>
-                  <TableCell>{enrollment.userId.email}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
+      <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Student</TableHead>
+                <TableHead className="hidden md:table-cell">Email</TableHead>
+                <TableHead>Enrolled Course</TableHead>
+                <TableHead className="text-center">Progress</TableHead>
+                <TableHead className="text-right">Enrolled</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentItems.length > 0 ? (
+                currentItems.map((enrollment) => (
+                  <TableRow key={enrollment._id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage
+                            src={enrollment.userId.photoUrl}
+                            alt={enrollment.userId.name}
+                          />
+                          <AvatarFallback>
+                            {enrollment.userId.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{enrollment.userId.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{enrollment.userId.email}</TableCell>
+                    <TableCell className="font-medium">
                       {enrollment.courseId.courseTitle}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {new Date(enrollment.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <StudentCourseProgress userId={enrollment.userId._id} courseId={enrollment.courseId._id} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {new Date(enrollment.createdAt).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan="5" className="text-center h-24">
+                    No students found for the selected criteria.
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan="4" className="text-center h-24">
-                  No students found for the selected criteria.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-end space-x-2 py-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              )}
+            </TableBody>
+          </Table>
+      </div>
+      
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

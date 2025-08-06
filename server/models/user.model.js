@@ -1,90 +1,52 @@
 import mongoose from "mongoose";
 
+const educationHistorySchema = new mongoose.Schema({
+  degree: { type: String, required: true },
+  institute: { type: String, required: true },
+  major: { type: String },
+  passingYear: { type: Number, required: true },
+});
+
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: String,
-      enum: ["instructor", "student", "superadmin"],
-    },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, enum: ["instructor", "student", "superadmin"] },
     instructorApplicationStatus: {
       type: String,
-      enum: ['none', 'pending', 'approved', 'refused'],
-      default: 'none',
+      enum: ["none", "pending", "approved", "refused"],
+      default: "none",
     },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    verificationToken: {
-      type: String,
-    },
-    verificationTokenExpires: {
-      type: Date,
-    },
-    resetPasswordToken: {
-      type: String,
-    },
-    resetPasswordExpires: {
-      type: Date,
-    },
-    isDisabled: {
-      type: Boolean,
-      default: false,
-    },
-    enrolledCourses: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Course",
-      },
-    ],
-    photoUrl: {
-      type: String,
-      default: "",
-    },
-    alternativeNumber: {
-      type: String,
-      default: ""
-    },
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String },
+    verificationTokenExpires: { type: Date },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
+    isDisabled: { type: Boolean, default: false },
+    enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    photoUrl: { type: String, default: "" },
+    alternativeNumber: { type: String, default: "" },
     gender: {
       type: String,
       enum: ["Male", "Female", "Other", ""],
-      default: ""
+      default: "",
     },
-    age: {
+    age: { type: Number },
+    occupation: { type: String, default: "" },
+    educationHistory: [educationHistorySchema],
+    address: { type: String, default: "" },
+    bio: { type: String, default: "" },
+    currentBalance: {
       type: Number,
+      default: 0,
     },
-    occupation: {
-      type: String,
-      default: ""
-    },
-    education: {
-      type: String,
-      default: ""
-    },
-    institute: {
-      type: String,
-      default: ""
-    },
-    address: {
-      type: String,
-      default: ""
-    },
-    bio: {
-        type: String,
-        default: ""
+    payoutDetails: {
+      bankAccountName: String,
+      bankAccountNumber: String,
+      bankName: String,
+      bankBranchName: String,
+      routingNumber: String,
     },
   },
   { timestamps: true }

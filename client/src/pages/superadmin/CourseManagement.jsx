@@ -22,12 +22,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2, AlertTriangle, Eye } from "lucide-react";
+import {
+  Trash2,
+  Loader2,
+  AlertTriangle,
+  Eye,
+  Settings,
+  MoreHorizontal,
+  ToggleLeft,
+  ToggleRight,
+  ExternalLink,
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +48,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -47,6 +64,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const CourseManagement = () => {
   const { data, isLoading, isError, error } = useGetAllCoursesForAdminQuery();
@@ -88,22 +106,19 @@ const CourseManagement = () => {
     if (!data?.courses) return [];
 
     return data.courses.filter((course) => {
-      if (statusFilter !== "all") {
-        if (String(course.isPublished) !== statusFilter) return false;
-      }
-      if (categoryFilter !== "all") {
-        if (course.category !== categoryFilter) return false;
-      }
-      if (instructorFilter !== "all") {
-        if (!course.creator || course.creator._id !== instructorFilter)
-          return false;
-      }
-      if (deletionFilter === "requested" && !course.isDeletionRequested) {
+      if (statusFilter !== "all" && String(course.isPublished) !== statusFilter)
         return false;
-      }
-      if (deletionFilter === "none" && course.isDeletionRequested) {
+      if (categoryFilter !== "all" && course.category !== categoryFilter)
         return false;
-      }
+      if (
+        instructorFilter !== "all" &&
+        (!course.creator || course.creator._id !== instructorFilter)
+      )
+        return false;
+      if (deletionFilter === "requested" && !course.isDeletionRequested)
+        return false;
+      if (deletionFilter === "none" && course.isDeletionRequested) return false;
+
       const lowerSearchTerm = searchTerm.toLowerCase();
       return (
         course.courseTitle.toLowerCase().includes(lowerSearchTerm) ||
@@ -120,17 +135,13 @@ const CourseManagement = () => {
     instructorFilter,
   ]);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (isError) {
+  if (isLoading) return <LoadingSpinner />;
+  if (isError)
     return (
       <div className="text-red-500 p-4">
         Error: {error.data?.message || "Failed to load courses."}
       </div>
     );
-  }
 
   return (
     <Card>
@@ -147,7 +158,7 @@ const CourseManagement = () => {
               placeholder="Search by Title or Instructor..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full md:w-44"
+              className="w-full sm:w-44"
             />
             <Select
               value={instructorFilter}
@@ -217,12 +228,11 @@ const CourseManagement = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Course Title</TableHead>
+              <TableHead>Course</TableHead>
               <TableHead>Instructor</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created At</TableHead>
-              <TableHead>Publish / Unpublish</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -230,13 +240,23 @@ const CourseManagement = () => {
             {filteredCourses.map((course) => (
               <TableRow key={course._id}>
                 <TableCell className="font-medium">
-                  {course.courseTitle}
-                  {course.isDeletionRequested && (
-                    <Badge variant="destructive" className="ml-2 animate-pulse">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Deletion Requested
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-3">
+                    <Avatar className="hidden h-12 w-12 sm:flex">
+                      <AvatarImage
+                        src={course.courseThumbnail}
+                        alt={course.courseTitle}
+                      />
+                      <AvatarFallback>
+                        {course.courseTitle.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div>{course.courseTitle}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {course.category}
+                      </div>
+                    </div>
+                  </div>
                 </TableCell>
                 <TableCell>{course.creator?.name || "N/A"}</TableCell>
                 <TableCell>৳{course.coursePrice || 0}</TableCell>
@@ -246,72 +266,89 @@ const CourseManagement = () => {
                   >
                     {course.isPublished ? "Published" : "Unpublished"}
                   </Badge>
+                  {course.isDeletionRequested && (
+                    <Badge variant="destructive" className="ml-2 animate-pulse">
+                      <AlertTriangle className="h-3 w-3 mr-1" /> Deletion
+                      Requested
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   {new Date(course.createdAt).toLocaleDateString()}
                 </TableCell>
-                <TableCell className="pl-8">
-                  <Switch
-                    checked={course.isPublished}
-                    onCheckedChange={() =>
-                      handleStatusChange(course._id, course.isPublished)
-                    }
-                    aria-label={`Toggle publication status for ${course.courseTitle}`}
-                  />
-                </TableCell>
-                <TableCell className="text-right space-x-2 align-middle">
-                  <Link
-                    to={`/course-detail/${course._id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      title="View Course Details"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={isDeleting}
-                        title="Delete Course"
-                      >
-                        {isDeleting ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        )}
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete the course "
-                          {course.courseTitle}" and all related data. This
-                          action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() =>
-                            handleDelete(course._id, course.courseTitle)
-                          }
-                          className="bg-red-600 hover:bg-red-700"
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to={`/course-detail/${course._id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          <ExternalLink className="mr-2 h-4 w-4" /> View on Site
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to={`/admin/course/${course._id}`}>
+                          <Settings className="mr-2 h-4 w-4" /> Manage Course
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleStatusChange(course._id, course.isPublished)
+                        }
+                      >
+                        {course.isPublished ? (
+                          <ToggleLeft className="mr-2 h-4 w-4" />
+                        ) : (
+                          <ToggleRight className="mr-2 h-4 w-4" />
+                        )}
+                        {course.isPublished ? "Unpublish" : "Publish"}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            className="text-red-600 focus:text-red-700"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete Course
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Are you absolutely sure?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete "{course.courseTitle}
+                              " and all related data. This action cannot be
+                              undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() =>
+                                handleDelete(course._id, course.courseTitle)
+                              }
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}

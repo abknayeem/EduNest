@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -11,18 +11,14 @@ import {
   BarChartHorizontalBig,
   UserCog,
   Receipt,
-  ChevronRight,
+  Wallet,
+  Landmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLogoutUserMutation } from "@/features/api/authApi";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import { useTheme } from "@/components/ThemeProvider";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,23 +31,17 @@ import {
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
 
 const SuperadminLayout = () => {
   const [logoutUser, { isSuccess }] = useLogoutUserMutation();
   const navigate = useNavigate();
   const { user } = useSelector((store) => store.auth);
   const { setTheme } = useTheme();
-  const location = useLocation();
-  const [isAnalyticsOpen, setIsAnalyticsOpen] = React.useState(
-    location.pathname.startsWith('/sadmin/analytics') || location.pathname.startsWith('/sadmin/transactions')
-  );
-
 
   React.useEffect(() => {
     if (isSuccess) {
       toast.success("Logged out successfully.");
-      navigate("/sadmin");
+      navigate("/sadmin-login");
     }
   }, [isSuccess, navigate]);
 
@@ -71,34 +61,37 @@ const SuperadminLayout = () => {
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </Link>
+          <Link
+            to="/sadmin/analytics"
+            className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <BarChartHorizontalBig size={20} />
+            <span>Platform Analytics</span>
+          </Link>
 
-          <Collapsible open={isAnalyticsOpen} onOpenChange={setIsAnalyticsOpen}>
-            <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between px-4">
-                    <div className="flex items-center gap-3">
-                        <BarChartHorizontalBig size={20} />
-                        <span>Analytics</span>
-                    </div>
-                    <ChevronRight className={cn("h-4 w-4 transition-transform", isAnalyticsOpen && "rotate-90")} />
-                </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-1 pl-6 pt-1">
-                 <Link
-                    to="/sadmin/analytics"
-                    className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    <LayoutDashboard size={16} />
-                    <span>Platform Analytics</span>
-                  </Link>
-                <Link
-                    to="/sadmin/transactions"
-                    className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                    <Receipt size={16} />
-                    <span>Transactions</span>
-                </Link>
-            </CollapsibleContent>
-          </Collapsible>
+          <Link
+            to="/sadmin/financials"
+            className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <Landmark size={20} />
+            <span>Platform Financials</span>
+          </Link>
+
+          <Link
+            to="/sadmin/transactions"
+            className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <Receipt size={20} />
+            <span>Transactions</span>
+          </Link>
+
+          <Link
+            to="/sadmin/payouts"
+            className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <Wallet size={20} />
+            <span>Payouts</span>
+          </Link>
 
           <Link
             to="/sadmin/users"

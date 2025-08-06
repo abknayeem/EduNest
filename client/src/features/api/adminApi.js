@@ -17,20 +17,22 @@ export const adminApi = createApi({
     "AdminAnalytics",
     "Transactions",
     "QuizAttempts",
+    "UserProgress",
+    "PlatformFinancials",
   ],
   endpoints: (builder) => ({
     getAdminStats: builder.query({
       query: () => ({ url: "/stats" }),
       providesTags: ["AdminStats"],
     }),
-    getPendingRequestsCount: builder.query({
-      query: () => ({ url: "/pending-requests/count" }),
-      providesTags: ["Users"],
-    }),
     getPlatformAnalytics: builder.query({
       query: ({ period, categoryPeriod }) =>
         `/analytics?period=${period}&categoryPeriod=${categoryPeriod}`,
       providesTags: ["AdminAnalytics"],
+    }),
+    getPlatformFinancials: builder.query({
+      query: (period = "all") => `/financials?period=${period}`,
+      providesTags: ["PlatformFinancials"],
     }),
     getAllInstructors: builder.query({
       query: () => ({ url: "/instructors" }),
@@ -108,6 +110,10 @@ export const adminApi = createApi({
       },
       providesTags: ["Transactions"],
     }),
+    getPendingRequestsCount: builder.query({
+      query: () => ({ url: "/pending-requests/count" }),
+      providesTags: ["Users"],
+    }),
     refuseInstructorRequest: builder.mutation({
       query: (userId) => ({
         url: `/users/${userId}/refuse-instructor`,
@@ -130,12 +136,29 @@ export const adminApi = createApi({
       }),
       providesTags: ["QuizAttempts"],
     }),
+    getUserCourseProgress: builder.query({
+      query: ({ userId, courseId }) => ({
+        url: `/users/${userId}/progress/${courseId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, { userId, courseId }) => [
+        { type: "UserProgress", id: `${userId}-${courseId}` },
+      ],
+    }),
+    getPlatformFinancialsReport: builder.query({
+      query: ({ period, format }) => ({
+        url: `/financials/report?period=${period}&format=${format}`,
+        method: "GET",
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
   }),
 });
 
 export const {
   useGetAdminStatsQuery,
   useGetPlatformAnalyticsQuery,
+  useGetPlatformFinancialsQuery,
   useGetAllInstructorsQuery,
   useGetAllUsersQuery,
   useGetUserDetailsForAdminQuery,
@@ -153,4 +176,6 @@ export const {
   useRefuseInstructorRequestMutation,
   useUpdateUserStatusMutation,
   useGetQuizAttemptsForUserQuery,
+  useGetUserCourseProgressQuery,
+  useGetPlatformFinancialsReportQuery,
 } = adminApi;

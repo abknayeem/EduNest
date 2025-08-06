@@ -1,7 +1,18 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
+// Layouts
 import MainLayout from "@/layout/MainLayout";
 import SuperadminLayout from "@/layout/SuperadminLayout";
+// Components for Protected Routes
+import {
+  AdminRoute,
+  AuthenticatedUser,
+  ProtectedRoute,
+} from "@/components/ProtectedRoutes";
+import PurchaseCourseProtectedRoute from "@/components/PurchaseCourseProtectedRoute";
+import { SuperadminRoute } from "@/components/SuperadminRoute";
+import { ThemeProvider } from "@/components/ThemeProvider";
+// General Pages
 import Login from "@/pages/login";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
@@ -10,6 +21,7 @@ import AboutUs from "@/pages/AboutUs";
 import VerifyEmail from "@/pages/VerifyEmail";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+// Student Pages
 import HeroSection from "@/pages/student/HeroSection";
 import Courses from "@/pages/student/Courses";
 import CourseDetail from "@/pages/student/CourseDetail";
@@ -19,6 +31,7 @@ import Profile from "@/pages/student/Profile";
 import CourseProgress from "@/pages/student/CourseProgress";
 import QuizTaker from "@/pages/student/QuizTaker";
 import QuizResult from "@/pages/student/QuizResult";
+// Instructor (Admin) Pages
 import Sidebar from "@/pages/admin/Sidebar";
 import AnalyticsDashboard from "@/pages/admin/AnalyticsDashboard";
 import CourseTable from "@/pages/admin/course/CourseTable";
@@ -27,8 +40,11 @@ import EditCourse from "@/pages/admin/course/EditCourse";
 import CreateLecture from "@/pages/admin/lecture/CreateLecture";
 import EditLecture from "@/pages/admin/lecture/EditLecture";
 import QuizEditor from "@/pages/admin/course/QuizEditor";
+import QnaManagement from "@/pages/admin/course/QnaManagement";
 import EnrolledStudents from "@/pages/admin/EnrolledStudents";
 import QuizResults from "@/pages/admin/course/QuizResults";
+import InstructorFinancials from "@/pages/admin/Financials";
+// Superadmin Pages
 import SuperadminLogin from "@/pages/superadmin/SuperadminLogin";
 import SuperadminDashboard from "@/pages/superadmin/SuperadminDashboard";
 import SuperadminAnalytics from "@/pages/superadmin/AnalyticsDashboard";
@@ -39,14 +55,8 @@ import CategoryManagement from "@/pages/superadmin/CategoryManagement";
 import InstructorManagement from "@/pages/superadmin/InstructorManagement";
 import InstructorDetails from "@/pages/superadmin/InstructorDetails";
 import TransactionManagement from "@/pages/superadmin/TransactionManagement";
-import {
-  AdminRoute,
-  AuthenticatedUser,
-  ProtectedRoute,
-} from "@/components/ProtectedRoutes";
-import PurchaseCourseProtectedRoute from "@/components/PurchaseCourseProtectedRoute";
-import { SuperadminRoute } from "@/components/SuperadminRoute";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import PayoutManagement from "@/pages/superadmin/PayoutManagement";
+import SuperadminFinancials from "@/pages/superadmin/Financials";
 
 const appRouter = createBrowserRouter([
   {
@@ -136,6 +146,7 @@ const appRouter = createBrowserRouter([
         ),
       },
       {
+        // Instructor Admin Routes (protected by AdminRoute)
         path: "admin",
         element: (
           <AdminRoute>
@@ -154,16 +165,20 @@ const appRouter = createBrowserRouter([
             element: <EditLecture />,
           },
           { path: "course/:courseId/quiz", element: <QuizEditor /> },
+          { path: "course/:courseId/qna", element: <QnaManagement /> },
           { path: "course/:courseId/quiz-results", element: <QuizResults /> },
+          { path: "financials", element: <InstructorFinancials /> },
         ],
       },
     ],
   },
   {
-    path: "/sadmin",
+    // Dedicated route for Superadmin
+    path: "/sadmin-login",
     element: <SuperadminLogin />,
   },
   {
+    // Superadmin Protected Routes
     path: "/sadmin",
     element: <SuperadminRoute />,
     children: [
@@ -182,6 +197,8 @@ const appRouter = createBrowserRouter([
           { path: "courses", element: <CourseManagement /> },
           { path: "categories", element: <CategoryManagement /> },
           { path: "transactions", element: <TransactionManagement /> },
+          { path: "payouts", element: <PayoutManagement /> },
+          { path: "financials", element: <SuperadminFinancials /> }, 
         ],
       },
     ],

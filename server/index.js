@@ -12,21 +12,18 @@ import adminRoute from "./routes/admin.route.js";
 import instructorRoute from "./routes/instructor.route.js";
 import categoryRoute from "./routes/category.route.js";
 import quizRoute from "./routes/quiz.route.js";
+import qnaRoute from "./routes/qna.route.js";
+import certificateRoute from "./routes/certificate.route.js";
+import payoutRoute from "./routes/payout.route.js";
 
 dotenv.config({});
-
 connectDB();
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cookieParser());
-
-app.use(cors({
-    origin:"http://localhost:5173",
-    credentials:true
-}));
+app.use(cors({ origin:"http://localhost:5173", credentials:true }));
 
 app.use("/api/v1/media", mediaRoute);
 app.use("/api/v1/user", userRoute);
@@ -37,6 +34,9 @@ app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/instructor", instructorRoute);
 app.use("/api/v1/category", categoryRoute);
 app.use("/api/v1/quiz", quizRoute);
+app.use("/api/v1/qna", qnaRoute);
+app.use("/api/v1/certificate", certificateRoute);
+app.use("/api/v1/payout", payoutRoute);
 
 app.listen(PORT, () => {
     console.log(`Server listen at port ${PORT}`);

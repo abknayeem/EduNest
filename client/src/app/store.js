@@ -8,6 +8,8 @@ import { adminApi } from "@/features/api/adminApi";
 import { instructorApi } from "@/features/api/instructorApi";
 import { categoryApi } from "@/features/api/categoryApi";
 import { quizApi } from "@/features/api/quizApi";
+import { payoutApi } from "@/features/api/payoutApi";
+import { qnaApi } from "@/features/api/qnaApi";
 import { setupListeners } from "@reduxjs/toolkit/query";
 
 export const appStore = configureStore({
@@ -21,7 +23,9 @@ export const appStore = configureStore({
             adminApi.middleware,
             instructorApi.middleware,
             categoryApi.middleware,
-            quizApi.middleware
+            quizApi.middleware,
+            payoutApi.middleware,
+            qnaApi.middleware
         )
 });
 

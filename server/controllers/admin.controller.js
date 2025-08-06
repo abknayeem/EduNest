@@ -4,6 +4,8 @@ import { CoursePurchase } from "../models/coursePurchase.model.js";
 import { Category } from "../models/category.model.js";
 import { Lecture } from "../models/lecture.model.js";
 import { QuizAttempt } from "../models/quizAttempt.model.js";
+import { CourseProgress } from "../models/courseProgress.js";
+import { Payout } from "../models/payout.model.js";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import {
@@ -252,12 +254,10 @@ export const createUserByAdmin = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(409)
-        .json({
-          success: false,
-          message: "User with this email already exists.",
-        });
+      return res.status(409).json({
+        success: false,
+        message: "User with this email already exists.",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -278,21 +278,17 @@ export const createUserByAdmin = async (req, res) => {
       });
     } catch (emailError) {
       console.error("Failed to send account creation email:", emailError);
-      return res
-        .status(201)
-        .json({
-          success: true,
-          message:
-            "User created successfully, but the confirmation email could not be sent.",
-        });
+      return res.status(201).json({
+        success: true,
+        message:
+          "User created successfully, but the confirmation email could not be sent.",
+      });
     }
 
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "User created successfully and a welcome email has been sent.",
-      });
+    res.status(201).json({
+      success: true,
+      message: "User created successfully and a welcome email has been sent.",
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -309,12 +305,10 @@ export const deleteUser = async (req, res) => {
         .json({ success: false, message: "User not found." });
     }
     if (user.role === "superadmin") {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "Superadmin accounts cannot be deleted.",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "Superadmin accounts cannot be deleted.",
+      });
     }
     await User.findByIdAndDelete(userId);
     try {
@@ -368,7 +362,13 @@ export const updateCoursePublicationStatus = async (req, res) => {
         .json({ success: false, message: "Course not found." });
     }
     course.isPublished = isPublished;
+    if (course.isPublished) {
+      course.publishedAt = new Date();
+    } else {
+      course.publishedAt = null;
+    }
     await course.save();
+
     if (course.isPublished) {
       try {
         const instructor = course.creator;
@@ -382,14 +382,10 @@ export const updateCoursePublicationStatus = async (req, res) => {
         console.error("Failed to send admin course publish email:", emailError);
       }
     }
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: `Course has been ${
-          isPublished ? "published" : "unpublished"
-        }.`,
-      });
+    res.status(200).json({
+      success: true,
+      message: `Course has been ${isPublished ? "published" : "unpublished"}.`,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -470,7 +466,7 @@ export const getPlatformAnalytics = async (req, res) => {
         sortOrder = { "_id.year": -1 };
         timeSeriesLimit = 5;
         break;
-      default:
+      default: // monthly
         mainDateFilter = {
           createdAt: {
             $gte: new Date(new Date().setMonth(new Date().getMonth() - 12)),
@@ -625,12 +621,10 @@ export const updateUserStatus = async (req, res) => {
         .json({ success: false, message: "User not found." });
     }
     if (user.role === "superadmin") {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "Cannot change the status of a superadmin.",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "Cannot change the status of a superadmin.",
+      });
     }
     user.isDisabled = isDisabled;
     await user.save();
@@ -650,12 +644,10 @@ export const updateUserStatus = async (req, res) => {
         emailError
       );
     }
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: `User has been ${isDisabled ? "disabled" : "enabled"}.`,
-      });
+    res.status(200).json({
+      success: true,
+      message: `User has been ${isDisabled ? "disabled" : "enabled"}.`,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -764,12 +756,10 @@ export const deleteInstructor = async (req, res) => {
     await Course.deleteMany({ creator: instructorId });
     await CoursePurchase.deleteMany({ courseId: { $in: courseIds } });
     await User.findByIdAndDelete(instructorId);
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Instructor and all their data deleted successfully.",
-      });
+    res.status(200).json({
+      success: true,
+      message: "Instructor and all their data deleted successfully.",
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -822,12 +812,10 @@ export const refuseInstructorRequest = async (req, res) => {
         .json({ success: false, message: "User not found." });
     }
     if (user.instructorApplicationStatus !== "pending") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "User does not have a pending application.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "User does not have a pending application.",
+      });
     }
     user.instructorApplicationStatus = "none";
     await user.save();
@@ -841,13 +829,11 @@ export const refuseInstructorRequest = async (req, res) => {
     } catch (emailError) {
       console.error("Failed to send refusal email:", emailError);
     }
-    res
-      .status(200)
-      .json({
-        success: true,
-        message:
-          "Instructor application has been refused and the user has been notified.",
-      });
+    res.status(200).json({
+      success: true,
+      message:
+        "Instructor application has been refused and the user has been notified.",
+    });
   } catch (error) {
     console.log("Error refusing instructor request:", error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -872,5 +858,245 @@ export const getQuizAttempts = async (req, res) => {
   } catch (error) {
     console.log("Error fetching quiz attempts for admin:", error);
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export const getUserCourseProgress = async (req, res) => {
+  try {
+    const { userId, courseId } = req.params;
+
+    const course = await Course.findById(courseId);
+    if (!course || course.lectures.length === 0) {
+      return res.status(200).json({ success: true, progress: 0 });
+    }
+    const totalLectures = course.lectures.length;
+
+    const progressData = await CourseProgress.findOne({ userId, courseId });
+    if (!progressData) {
+      return res.status(200).json({ success: true, progress: 0 });
+    }
+
+    const viewedLectures = progressData.lectureProgress.filter(
+      (p) => p.viewed
+    ).length;
+
+    const percentage = Math.round((viewedLectures / totalLectures) * 100);
+    res.status(200).json({ success: true, progress: percentage });
+  } catch (error) {
+    console.log("Error fetching user course progress:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export const getPlatformFinancials = async (req, res) => {
+  try {
+    const { period = "all" } = req.query; // Added period parameter
+
+    let dateFilter = {};
+    if (period !== "all") {
+      let startDate = new Date();
+      switch (period) {
+        case "daily":
+          startDate.setDate(startDate.getDate() - 30);
+          break;
+        case "weekly":
+          startDate.setDate(startDate.getDate() - 7 * 12);
+          break;
+        case "monthly":
+          startDate.setMonth(startDate.getMonth() - 12);
+          break;
+        case "yearly":
+          startDate.setFullYear(startDate.getFullYear() - 5);
+          break;
+      }
+      dateFilter = { createdAt: { $gte: startDate } };
+    }
+
+    const totalRevenueResult = await CoursePurchase.aggregate([
+      { $match: { status: "completed", ...dateFilter } }, // Applied dateFilter
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const totalRevenue = totalRevenueResult[0]?.total || 0;
+
+    const totalPlatformFeeResult = await CoursePurchase.aggregate([
+      { $match: { status: "completed", ...dateFilter } }, // Applied dateFilter
+      { $group: { _id: null, total: { $sum: "$platformFee" } } },
+    ]);
+    const totalPlatformFees = totalPlatformFeeResult[0]?.total || 0;
+
+    const payoutStats = await Payout.aggregate([
+      { $match: { ...dateFilter } }, // Applied dateFilter
+      { $group: { _id: "$status", total: { $sum: "$amount" } } },
+    ]);
+
+    const totalPaidOut =
+      payoutStats.find((p) => p._id === "completed")?.total || 0;
+    const pendingPayouts =
+      payoutStats.find((p) => p._id === "pending")?.total || 0;
+
+    // NEW: Fetch platform-wide course sales with instructor info
+    const platformCourseSales = await CoursePurchase.aggregate([
+      { $match: { status: "completed", ...dateFilter } },
+      {
+        $lookup: {
+          from: "courses",
+          localField: "courseId",
+          foreignField: "_id",
+          as: "courseInfo",
+        },
+      },
+      { $unwind: "$courseInfo" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "courseInfo.creator",
+          foreignField: "_id",
+          as: "instructorInfo",
+        },
+      },
+      { $unwind: "$instructorInfo" },
+      {
+        $group: {
+          _id: "$courseId",
+          courseTitle: { $first: "$courseInfo.courseTitle" },
+          creatorName: { $first: "$instructorInfo.name" },
+          totalRevenue: { $sum: "$amount" },
+          totalPlatformFee: { $sum: "$platformFee" },
+          netIncome: { $sum: "$instructorRevenue" },
+          totalSales: { $sum: 1 },
+        },
+      },
+      { $sort: { totalRevenue: -1 } },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      financials: {
+        totalRevenue,
+        totalPlatformFees,
+        netPlatformIncome: totalPlatformFees,
+        totalPaidOut,
+        pendingPayouts,
+        totalInstructorEarnings: totalRevenue - totalPlatformFees,
+        platformCourseSales, // Include platform-wide course sales
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching platform financials:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// New controller for generating platform financial reports
+export const getPlatformFinancialsReport = async (req, res) => {
+  try {
+    const { period = "all", format = "pdf" } = req.query;
+
+    let dateFilter = {};
+    let periodLabel = "All Time";
+    if (period !== "all") {
+      let startDate = new Date();
+      switch (period) {
+        case "daily":
+          startDate.setDate(startDate.getDate() - 30);
+          periodLabel = "Last 30 Days";
+          break;
+        case "weekly":
+          startDate.setDate(startDate.getDate() - 7 * 12);
+          periodLabel = "Last 12 Weeks";
+          break;
+        case "monthly":
+          startDate.setMonth(startDate.getMonth() - 12);
+          periodLabel = "Last 12 Months";
+          break;
+        case "yearly":
+          startDate.setFullYear(startDate.getFullYear() - 5);
+          periodLabel = "Last 5 Years";
+          break;
+      }
+      dateFilter = { createdAt: { $gte: startDate } };
+    }
+
+    const totalRevenueResult = await CoursePurchase.aggregate([
+      { $match: { status: "completed", ...dateFilter } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const totalRevenue = totalRevenueResult[0]?.total || 0;
+
+    const totalPlatformFeeResult = await CoursePurchase.aggregate([
+      { $match: { status: "completed", ...dateFilter } },
+      { $group: { _id: null, total: { $sum: "$platformFee" } } },
+    ]);
+    const totalPlatformFees = totalPlatformFeeResult[0]?.total || 0;
+
+    const payoutStats = await Payout.aggregate([
+      { $match: { ...dateFilter } },
+      { $group: { _id: "$status", total: { $sum: "$amount" } } },
+    ]);
+
+    const totalPaidOut =
+      payoutStats.find((p) => p._id === "completed")?.total || 0;
+    const pendingPayouts =
+      payoutStats.find((p) => p._id === "pending")?.total || 0;
+
+    const reportData = {
+      period: periodLabel,
+      summary: {
+        totalRevenue,
+        totalPlatformFees,
+        netPlatformIncome: totalPlatformFees,
+        totalPaidOut,
+        pendingPayouts,
+        totalInstructorEarnings: totalRevenue - totalPlatformFees,
+      },
+      // Optionally, fetch detailed transactions for the report
+      transactions: await CoursePurchase.find({
+        status: "completed",
+        ...dateFilter,
+      })
+        .populate({ path: "userId", select: "name email" })
+        .populate({
+          path: "courseId",
+          select: "courseTitle creator",
+          populate: { path: "creator", select: "name" },
+        })
+        .sort({ createdAt: -1 })
+        .lean(), // Use .lean() for plain JS objects
+    };
+
+    if (format === "pdf") {
+      const { generatePlatformFinancialsPdf } = await import(
+        "../utils/generateReports.js"
+      );
+      const pdfBuffer = await generatePlatformFinancialsPdf(reportData);
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=platform_financial_report_${period}.pdf`
+      );
+      res.send(pdfBuffer);
+    } else if (format === "csv") {
+      const { generatePlatformFinancialsCsv } = await import(
+        "../utils/generateReports.js"
+      );
+      const csvString = generatePlatformFinancialsCsv(reportData);
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=platform_financial_report_${period}.csv`
+      );
+      res.send(csvString);
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "Invalid report format." });
+    }
+  } catch (error) {
+    console.error("Error generating platform financials report:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to generate report." });
   }
 };

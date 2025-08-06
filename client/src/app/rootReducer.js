@@ -8,6 +8,8 @@ import { adminApi } from "@/features/api/adminApi";
 import { instructorApi } from "@/features/api/instructorApi";
 import { categoryApi } from "@/features/api/categoryApi";
 import { quizApi } from "@/features/api/quizApi";
+import { payoutApi } from "@/features/api/payoutApi";
+import { qnaApi } from "@/features/api/qnaApi";
 import instructorApplicationReducer from "../features/instructorApplicationSlice";
 
 const rootReducer = combineReducers({
@@ -19,6 +21,8 @@ const rootReducer = combineReducers({
     [instructorApi.reducerPath]: instructorApi.reducer,
     [categoryApi.reducerPath]: categoryApi.reducer,
     [quizApi.reducerPath]: quizApi.reducer,
+    [payoutApi.reducerPath]: payoutApi.reducer,
+    [qnaApi.reducerPath]: qnaApi.reducer,
     auth:authReducer,
     instructorApplication: instructorApplicationReducer,
 });

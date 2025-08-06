@@ -54,6 +54,9 @@ const courseSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    publishedAt: {
+        type: Date,
+    },
   },
   { timestamps: true }
 );

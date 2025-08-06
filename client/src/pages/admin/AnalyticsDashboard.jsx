@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useGetInstructorAnalyticsQuery } from "@/features/api/instructorApi";
+import { useRequestPayoutMutation } from "@/features/api/payoutApi";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import {
   Card,
@@ -28,6 +29,8 @@ import {
   Users,
   BookOpen,
   BarChart as BarChartIcon,
+  Loader2,
+  Wallet,
 } from "lucide-react";
 import {
   BarChart,
@@ -39,8 +42,22 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useSelector } from "react-redux";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
-const StatCard = ({ title, value, icon, formatAsCurrency = false }) => (
+const StatCard = ({ title, value, icon, formatAsCurrency = false, action }) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -50,32 +67,86 @@ const StatCard = ({ title, value, icon, formatAsCurrency = false }) => (
       <div className="text-2xl font-bold">
         {formatAsCurrency ? `৳${Number(value).toLocaleString()}` : value}
       </div>
+      {action}
     </CardContent>
   </Card>
 );
 
+const PayoutDialog = ({ balance }) => {
+  const [amount, setAmount] = useState("");
+  const [requestPayout, { isLoading }] = useRequestPayoutMutation();
+
+  const handleRequest = () => {
+    toast.promise(requestPayout({ amount: Number(amount) }).unwrap(), {
+      loading: "Submitting request...",
+      success: "Payout request submitted!",
+      error: (err) => err.data?.message || "Failed to submit request.",
+    });
+  };
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Request a Payout</DialogTitle>
+        <DialogDescription>
+          Your current available balance is ৳{balance.toLocaleString()}.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="space-y-2">
+        <Label htmlFor="amount">Amount to withdraw</Label>
+        <Input
+          id="amount"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="e.g., 1500"
+        />
+      </div>
+      <DialogFooter>
+        <Button onClick={handleRequest} disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Submit Request
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
+
 const AnalyticsDashboard = () => {
   const [period, setPeriod] = useState("monthly");
+  const { user } = useSelector((store) => store.auth);
   const { data, isLoading, isError, error } =
     useGetInstructorAnalyticsQuery(period);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (isError) {
+  if (isLoading) return <LoadingSpinner />;
+  if (isError)
     return (
       <div className="text-red-500 p-4">
         Error: {error.data?.message || "Failed to load analytics."}
       </div>
     );
-  }
 
   const { stats } = data || {};
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Dialog>
+          <StatCard
+            title="Available Balance"
+            value={user?.currentBalance || 0}
+            icon={<Wallet className="h-4 w-4 text-muted-foreground" />}
+            formatAsCurrency
+            action={
+              <DialogTrigger asChild>
+                <Button variant="link" className="p-0 h-auto text-xs">
+                  Request Payout
+                </Button>
+              </DialogTrigger>
+            }
+          />
+          <PayoutDialog balance={user?.currentBalance || 0} />
+        </Dialog>
         <StatCard
           title="Total Revenue"
           value={stats.totalRevenue}
@@ -92,13 +163,7 @@ const AnalyticsDashboard = () => {
           value={stats.totalStudents}
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
         />
-        <StatCard
-          title="Total Courses"
-          value={stats.totalCourses}
-          icon={<BookOpen className="h-4 w-4 text-muted-foreground" />}
-        />
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <Card className="lg:col-span-3">
           <CardHeader className="flex flex-row items-center justify-between">
@@ -108,7 +173,6 @@ const AnalyticsDashboard = () => {
                 Showing data for the selected period.
               </CardDescription>
             </div>
-          
             <Select value={period} onValueChange={setPeriod}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Select period" />
@@ -141,7 +205,6 @@ const AnalyticsDashboard = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Top 5 Courses by Revenue</CardTitle>

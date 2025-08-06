@@ -11,22 +11,37 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useGetCourseDetailWithStatusQuery } from "@/features/api/purchaseApi";
 import { BadgeInfo, PlayCircle, Lock } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import ReactPlayer from "react-player";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const CourseDetail = () => {
   const params = useParams();
   const courseId = params.courseId;
   const navigate = useNavigate();
-  const { data, isLoading, isError } =
+  const { data, isLoading, isError, refetch } =
     useGetCourseDetailWithStatusQuery(courseId);
 
   const { isAuthenticated } = useSelector((store) => store.auth);
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refetch();
+      }
+    };
 
-  if (isLoading) return <h1>Loading...</h1>;
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    refetch();
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refetch]);
+
+  if (isLoading) return <LoadingSpinner />;
   if (isError) return <h2>Failed to load course details</h2>;
 
   const { course, purchased } = data;
@@ -53,7 +68,9 @@ const CourseDetail = () => {
           </p>
           <div className="flex items-center gap-2 text-sm">
             <BadgeInfo size={16} />
-            <p>Last updated {course?.createdAt.split("T")[0]}</p>
+            <p>
+              Last updated {new Date(course?.createdAt).toLocaleDateString()}
+            </p>
           </div>
           <p>Students enrolled: {course?.enrolledStudents.length}</p>
         </div>
@@ -63,7 +80,7 @@ const CourseDetail = () => {
           <h1 className="font-bold text-xl md:text-2xl">Description</h1>
           <div
             className="text-sm text-justify"
-            dangerouslySetInnerHTML={{ __html:course.description }}
+            dangerouslySetInnerHTML={{ __html: course.description }}
           />
 
           <Separator />
@@ -77,33 +94,43 @@ const CourseDetail = () => {
               {course.lectures.map((lecture, idx) => (
                 <div key={idx} className="flex items-center gap-3 text-sm">
                   <span>
-                    {lecture.isPreviewFree || purchased ? <PlayCircle size={14} /> : <Lock size={14} />}
+                    {lecture.isPreviewFree || purchased ? (
+                      <PlayCircle size={14} />
+                    ) : (
+                      <Lock size={14} />
+                    )}
                   </span>
                   <p>{lecture.lectureTitle}</p>
                 </div>
               ))}
             </CardContent>
           </Card>
-          
+
           <Separator />
           <div className="space-y-4 py-4">
-              <h2 className="font-bold text-xl md:text-2xl">About the Instructor</h2>
-              <div className="flex items-center gap-4">
-                  <Avatar className="h-20 w-20">
-                      <AvatarImage src={course.creator.photoUrl} alt={course.creator.name} />
-                      <AvatarFallback>{course.creator.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                      <h3 className="font-semibold text-lg">{course.creator.name}</h3>
-                      <p className="text-sm text-muted-foreground">{course.creator.occupation || 'Instructor'}</p>
-                  </div>
+            <h2 className="font-bold text-xl md:text-2xl">
+              About the Instructor
+            </h2>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-20 w-20">
+                <AvatarImage
+                  src={course.creator.photoUrl}
+                  alt={course.creator.name}
+                />
+                <AvatarFallback>{course.creator.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="font-semibold text-lg">{course.creator.name}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {course.creator.occupation || "Instructor"}
+                </p>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {course.creator.bio || "This instructor hasn't added a bio yet."}
-              </p>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              {course.creator.bio || "This instructor hasn't added a bio yet."}
+            </p>
           </div>
           <Separator />
-
         </div>
         <div className="w-full lg:w-1/3">
           <Card>
@@ -116,20 +143,26 @@ const CourseDetail = () => {
                   controls={true}
                 />
               </div>
-              <h1><strong>Introduction</strong></h1>
+              <h1>
+                <strong>Introduction</strong>
+              </h1>
               <Separator className="my-2" />
-              <h1 className="text-lg md:text-xl font-semibold">৳{course.coursePrice}</h1>
+              <h1 className="text-lg md:text-xl font-semibold">
+                ৳{course.coursePrice}
+              </h1>
             </CardContent>
-            
+
             <CardFooter className="flex justify-center p-4">
               {isAuthenticated ? (
                 purchased ? (
-                  <Button onClick={handleContinueCourse} className="w-full">Continue Course</Button>
+                  <Button onClick={handleContinueCourse} className="w-full">
+                    Continue Course
+                  </Button>
                 ) : (
                   <BuyCourseButton courseId={courseId} />
                 )
               ) : (
-                <Button onClick={() => navigate('/login')} className="w-full">
+                <Button onClick={() => navigate("/login")} className="w-full">
                   Login to Purchase
                 </Button>
               )}
