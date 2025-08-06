@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduNest - A Full-Stack Learning Management System</title>
+    <style>
+        :root {
+            --background: #f8fafc; --foreground: #0f172a; --card-bg: #ffffff;
+            --primary: #2563eb; --primary-foreground: #ffffff; --secondary: #f1f5f9;
+            --muted-foreground: #64748b; --border: #e2e8f0; --code-bg: #1e293b; --code-fg: #e2e8f0;
+        }
+        [data-theme="dark"] {
+            --background: #020817; --foreground: #f8fafc; --card-bg: #0f172a;
+            --primary: #60a5fa; --primary-foreground: #020817; --secondary: #1e293b;
+            --muted-foreground: #94a3b8; --border: #334155; --code-bg: #0f172a; --code-fg: #cbd5e1;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background); color: var(--foreground);
+            line-height: 1.7; margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s; font-size: 16px;
+        }
+        .container { max-width: 1024px; margin: 0 auto; padding: 2rem 1.5rem; }
+        header { text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 2rem; margin-bottom: 2rem; }
+        h1 { font-size: 2.75rem; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 0.5rem; }
+        h1 + p { font-size: 1.125rem; color: var(--muted-foreground); max-width: 65ch; margin: 0 auto; }
+        h2 { font-size: 2rem; font-weight: 700; margin-top: 3.5rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; }
+        h4 { font-size: 1.1rem; font-weight: 600; }
+        a { color: var(--primary); text-decoration: none; font-weight: 500; transition: opacity 0.2s; }
+        a:hover { opacity: 0.8; text-decoration: underline; }
+        .theme-toggle {
+            position: fixed; top: 1rem; right: 1rem; background-color: var(--secondary); border: 1px solid var(--border);
+            color: var(--foreground); padding: 0.5rem; border-radius: 9999px; cursor: pointer; z-index: 100;
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+        }
+        .theme-toggle svg { width: 20px; height: 20px; }
+        [data-theme="light"] .moon-icon { display: block; } [data-theme="light"] .sun-icon { display: none; }
+        [data-theme="dark"] .moon-icon { display: none; } [data-theme="dark"] .sun-icon { display: block; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .gallery-item {
+            border-radius: 12px; overflow: hidden; background-color: var(--card-bg); border: 1px solid var(--border);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .gallery-item img { width: 100%; height: auto; display: block; background-color: #eee; }
+        .gallery-item figcaption { padding: 1rem; font-size: 0.9rem; text-align: center; font-weight: 500; border-top: 1px solid var(--border); }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .feature-column { background-color: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
+        .feature-column h3 { margin-top: 0; font-size: 1.25rem; padding-bottom: 0.75rem; margin-bottom: 1rem; }
+        .feature-column ul { list-style: none; padding: 0; margin: 0; }
+        .feature-column li { padding: 0.6rem 0; font-size: 0.95rem; }
+        .tech-stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 0.8rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        thead { background-color: var(--secondary); }
+        tbody tr:last-child td { border-bottom: none; }
+        pre { background-color: var(--code-bg); color: var(--code-fg); padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: "Courier New", Courier, monospace; font-size: 0.9rem; }
+        code { font-family: "Courier New", Courier, monospace; background-color: var(--secondary); padding: 0.2em 0.4em; border-radius: 4px; }
+        pre code { background-color: transparent; padding: 0; }
+        footer { text-align: center; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--muted-foreground); }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div class="container">
+        <header>
+            <h1>EduNest - A Full-Stack Learning Management System</h1>
+            <p>EduNest is a feature-rich, full-stack LMS built with the MERN stack. Developed as a final year university project, it provides a seamless, modern, and scalable e-learning experience for students, instructors, and administrators.</p>
+        </header>
+
+        <main>
+            <section id="gallery">
+                <h2>📸 Image Gallery</h2>
+                <div class="gallery">
+                    <figure class="gallery-item">
+                        <img src="./readme-assets/homepage.jpg" alt="Homepage Screenshot">
+                        <figcaption>Fig 1: Homepage (Light & Dark Mode)</figcaption>
+                    </figure>
+                    <figure class="gallery-item">
+                        <img src="./readme-assets/course-detail.jpg" alt="Course Detail Page Screenshot">
+                        <figcaption>Fig 2: Course Detail Page</figcaption>
+                    </figure>
+                    <figure class="gallery-item">
+                        <img src="./readme-assets/instructor-dashboard.jpg" alt="Instructor Dashboard Screenshot">
+                        <figcaption>Fig 3: Instructor Analytics Dashboard</figcaption>
+                    </figure>
+                    <figure class="gallery-item">
+                        <img src="./readme-assets/admin-dashboard.jpg" alt="Admin Dashboard Screenshot">
+                        <figcaption>Fig 4: Superadmin Main Dashboard</figcaption>
+                    </figure>
+                    <figure class="gallery-item">
+                        <img src="./readme-assets/user-management.jpg" alt="User Management Interface Screenshot">
+                        <figcaption>Fig 5: Superadmin User Management</figcaption>
+                    </figure>
+                    <figure class="gallery-item">
+                        <img src="./readme-assets/course-management.jpg" alt="Course Management Interface Screenshot">
+                        <figcaption>Fig 6: Superadmin Course Management</figcaption>
+                    </figure>
+                </div>
+            </section>
+
+            <section id="features">
+                <h2>✨ Core Features</h2>
+                <div class="features-grid">
+                    <div class="feature-column">
+                        <h3>👨‍🎓 Student & User Features</h3>
+                        <ul>
+                            <li><strong>Account Management:</strong> Secure registration with email verification, login, and password reset.</li>
+                            <li><strong>Profile Management:</strong> Create and update a personal profile with picture and password changes.</li>
+                            <li><strong>Course Marketplace:</strong> Search and filter courses by category, keywords, and price.</li>
+                            <li><strong>Secure Payments:</strong> Purchase courses using the integrated Stripe payment gateway.</li>
+                            <li><strong>Learning Dashboard:</strong> View all enrolled courses in a dedicated "My Learning" section.</li>
+                            <li><strong>Course Progression:</strong> Track course and lecture completion progress.</li>
+                            <li><strong>Interactive Learning:</strong> Watch video lectures, participate in quizzes, and view results.</li>
+                            <li><strong>Q&A Section:</strong> Ask questions on lectures and reply to answers.</li>
+                            <li><strong>Certification:</strong> Automatically receive a PDF Certificate of Completion via email.</li>
+                            <li><strong>Instructor Application:</strong> Apply to become an instructor through the platform.</li>
+                        </ul>
+                    </div>
+                    <div class="feature-column">
+                        <h3>🧑‍🏫 Instructor Features</h3>
+                        <ul>
+                            <li><strong>Analytics Dashboard:</strong> Monitor revenue, sales, and student enrollment statistics.</li>
+                            <li><strong>Financial Management:</strong> View detailed financial statements and request payouts.</li>
+                            <li><strong>Course Lifecycle Management:</strong> Full CRUD functionality for courses.</li>
+                            <li><strong>Content Management:</strong> Create/edit lectures and upload video content to Cloudinary.</li>
+                            <li><strong>Quiz Editor:</strong> Create and manage quizzes with multiple-choice questions.</li>
+                            <li><strong>Student Management:</strong> View enrolled students and monitor their course progress.</li>
+                            <li><strong>Engagement:</strong> Manage and answer student questions in the Q&A panel.</li>
+                        </ul>
+                    </div>
+                    <div class="feature-column">
+                        <h3>👑 Superadmin Features</h3>
+                        <ul>
+                            <li><strong>Platform Oversight:</strong> Main dashboard with platform-wide statistics.</li>
+                            <li><strong>Advanced Analytics:</strong> View revenue graphs, top instructors, and more.</li>
+                            <li><strong>User Administration:</strong> Manage all users, change roles, and enable/disable accounts.</li>
+                            <li><strong>Application Processing:</strong> Approve or refuse instructor applications.</li>
+                            <li><strong>Course Control:</strong> Manage all courses, including force-publishing or deletion.</li>
+                            <li><strong>Category Management:</strong> Full CRUD functionality for course categories.</li>
+                            <li><strong>Financial Administration:</strong> View all transactions and process instructor payouts.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="tech-stack">
+                <h2>🛠️ Tech Stack & Architecture</h2>
+                 <div class="tech-stack-grid">
+                    <div class="stack-column">
+                        <h3>Frontend</h3>
+                        <table>
+                            <thead><tr><th>Technology</th><th>Description</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>React.js</strong></td><td>A library for building user interfaces.</td></tr>
+                                <tr><td><strong>Vite</strong></td><td>A next-generation frontend build tool.</td></tr>
+                                <tr><td><strong>Redux Toolkit & RTK Query</strong></td><td>For state management and server-state caching.</td></tr>
+                                <tr><td><strong>React Router</strong></td><td>For client-side routing in a Single Page Application.</td></tr>
+                                <tr><td><strong>Tailwind CSS</strong></td><td>A utility-first CSS framework for responsive UI.</td></tr>
+                                <tr><td><strong>shadcn/ui & Radix UI</strong></td><td>A collection of accessible and reusable UI components.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="stack-column">
+                        <h3>Backend</h3>
+                        <table>
+                           <thead><tr><th>Technology</th><th>Description</th></tr></thead>
+                           <tbody>
+                                <tr><td><strong>Node.js & Express.js</strong></td><td>For building the robust and scalable RESTful API.</td></tr>
+                                <tr><td><strong>MongoDB & Mongoose</strong></td><td>NoSQL database and ODM for flexible data modeling.</td></tr>
+                                <tr><td><strong>JWT (JSON Web Tokens)</strong></td><td>For secure user authentication and session management.</td></tr>
+                                <tr><td><strong>Stripe API</strong></td><td>For processing payments and handling webhooks.</td></tr>
+                                <tr><td><strong>Cloudinary</strong></td><td>Cloud-based service for managing images and videos.</td></tr>
+                                <tr><td><strong>Nodemailer & PDFKit</strong></td><td>For sending automated emails and generating PDFs.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="testing">
+                <h2>🧪 Testing & Quality Assurance</h2>
+                <p>This project was developed with a strong emphasis on quality assurance. The testing strategy included <strong>Unit Testing</strong> for individual components, <strong>Integration Testing</strong> to ensure different parts of the application work together correctly, and <strong>End-to-End (E2E) Testing</strong> to simulate and validate real user scenarios from start to finish. Methodologies included both White-Box and Black-Box testing to ensure code quality and functional correctness.</p>
+            </section>
+            
+            <section id="getting-started">
+                <h2>🚀 Getting Started</h2>
+                <p>To get a local copy up and running, please follow these steps.</p>
+                
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>Node.js (v18 or later)</li>
+                    <li>npm (or an alternative package manager)</li>
+                    <li>MongoDB (a local instance or a cloud service like MongoDB Atlas)</li>
+                    <li>Git</li>
+                </ul>
+                
+                <h3>Installation from Repository</h3>
+                <ol>
+                    <li>
+                        <h4>1. Clone the repository:</h4>
+                        <pre><code>git clone https://github.com/abknayeem/EduNest.git
+cd EduNest</code></pre>
+                    </li>
+                    <li>
+                        <h4>2. Setup the Backend:</h4>
+                        <pre><code>cd server
+npm install</code></pre>
+                        <p>Create a <code>.env</code> file in the <code>/server</code> directory and populate it with your credentials (use the provided <code>.env</code> file in the codebase as a template).</p>
+                        <p>Start the backend server:</p>
+                        <pre><code>npm run dev</code></pre>
+                    </li>
+                    <li>
+                        <h4>3. Setup the Frontend:</h4>
+                        <p>Open a new terminal window and navigate back to the root `EduNest` folder.</p>
+                        <pre><code>cd ../client
+npm install</code></pre>
+                        <p>Start the frontend development server:</p>
+                        <pre><code>npm run dev</code></pre>
+                    </li>
+                    <li>
+                        <h4>4. Access the Application:</h4>
+                        <p>The application should now be running at <a href="http://localhost:5173" target="_blank">http://localhost:5173</a>.</p>
+                    </li>
+                </ol>
+            </section>
+        </main>
+
+        <footer>
+            <p>Developed by Al Jamil & Ahmad Bakhtiar Nayeem as a Final Year Project at Metropolitan University, Sylhet.</p>
+        </footer>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlEl = document.documentElement;
+        
+        const currentTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        htmlEl.setAttribute('data-theme', currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const newTheme = htmlEl.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            htmlEl.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
+</body>
+</html>
