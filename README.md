@@ -2,11 +2,20 @@
 
 ### [✨ View the full Portfolio README with Image Gallery ✨](https://htmlpreview.github.io/?https://github.com/abknayeem/EduNest/blob/main/documents/README_Final.html)
 
+### 🚀 [Live Demo Link](https://your-live-demo-url.com) 🚀 
+*(Note: Be sure to replace this with your actual deployment link if you host the project online.)*
+
 ---
 
 EduNest is a feature-rich, full-stack Learning Management System built with the MERN stack. Developed as a final year university project, it provides a seamless, modern, and scalable e-learning experience for students, instructors, and administrators.
 
 The platform is a complete, real-world application that handles everything from user authentication and course creation to secure online payments with Stripe, video hosting with Cloudinary, and automated email notifications.
+
+## 🏛️ System Architecture
+This diagram illustrates the flow of data and interaction between the different components of the application.
+
+![System Architecture Diagram](./documents/readme-assets/system-architecture.jpg)
+*(Note: To make this image appear, take a screenshot of the diagram from page 28 of your report and save it as `system-architecture.jpg` inside the `documents/readme-assets` folder, then push it to GitHub.)*
 
 ## ✨ Core Features
 
@@ -81,9 +90,6 @@ You will need to create a `.env` file in the `server` directory. Below is an exp
 | `SUPERADMIN_PASSWORD`     | The password for the default superadmin account.       |
 | `FRONTEND_URL`            | The base URL of the frontend (e.g., http://localhost:5173). |
 
-
 ## 📜 License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
-
-*(**Action Required:** Create a new file named `LICENSE` in the root of your project and paste the text of the MIT license into it.)*
